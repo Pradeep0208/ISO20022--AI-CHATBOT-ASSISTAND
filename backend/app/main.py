@@ -42,10 +42,15 @@ class ChatResponse(BaseModel):
 # Ollama Client
 # =====================================================
 import os
-
+from ollama import Client
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://127.0.0.1:11434")
 
 ollama_client = Client(host=OLLAMA_HOST)
+
+import os
+from huggingface_hub import InferenceClient
+HF_TOKEN = os.getenv("HF_TOKEN", "")          # set this in HF Space Secrets
+HF_MODEL = os.getenv("HF_MODEL", "HuggingFaceH4/zephyr-7b-beta")  # or any model you choose
 
 hf_client = InferenceClient(model=HF_MODEL, token=HF_TOKEN) if HF_TOKEN else None
 MODEL_NAME = "llama3.2:latest"
