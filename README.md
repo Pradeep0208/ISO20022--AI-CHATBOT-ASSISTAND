@@ -1,3 +1,11 @@
+---
+title: ISO20022 Chatbot
+emoji: 🤖
+sdk: docker
+app_port: 7860
+---
+
+
 # ISO20022 AI Chatbot Assistant (RAG-based)
 
 ## 1) What is this project?
