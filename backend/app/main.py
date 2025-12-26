@@ -41,6 +41,9 @@ class ChatResponse(BaseModel):
 # =====================================================
 # Ollama Client
 # =====================================================
+import os
+
+OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://127.0.0.1:11434")
 
 ollama_client = Client(host=OLLAMA_HOST)
 
