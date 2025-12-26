@@ -4,11 +4,13 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from app.rag_engine import answer_query, MESSAGE_CODES
 import re
 
 
 from ollama import Client
+from huggingface_hub import InferenceClient
 import os
 
 # =====================================================
@@ -40,8 +42,24 @@ class ChatResponse(BaseModel):
 # Ollama Client
 # =====================================================
 
-ollama_client = Client(host="http://127.0.0.1:11434")
+ollama_client = Client(host=OLLAMA_HOST)
+
+hf_client = InferenceClient(model=HF_MODEL, token=HF_TOKEN) if HF_TOKEN else None
 MODEL_NAME = "llama3.2:latest"
+
+# --- Deployment configuration (Local vs Hugging Face Spaces) ---
+# Local dev: uses Ollama running on your machine.
+# Hugging Face Spaces: Ollama is usually NOT available, so we use HF Inference API instead.
+OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://127.0.0.1:11434")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", MODEL_NAME)
+
+HF_TOKEN = os.getenv("HF_TOKEN") or os.getenv("HUGGINGFACEHUB_API_TOKEN")
+HF_MODEL = os.getenv("HF_MODEL", "mistralai/Mistral-7B-Instruct-v0.2")
+HF_MAX_NEW_TOKENS = int(os.getenv("HF_MAX_NEW_TOKENS", "512"))
+HF_TEMPERATURE = float(os.getenv("HF_TEMPERATURE", "0.2"))
+
+# HF sets SPACE_ID automatically in Spaces runtime
+RUNNING_ON_SPACES = bool(os.getenv("SPACE_ID"))
 
 def run_llm(prompt: str) -> str:
     try:
@@ -785,3 +803,16 @@ def chat_endpoint(request: ChatRequest):
     raw_content = answer_query(request.query)
     final_answer = enhance_with_llm(raw_content, request.query)
     return ChatResponse(answer=final_answer)
+
+
+
+# --- Serve built frontend (for Hugging Face Spaces / single-link deployments) ---
+# If you build the React app into /frontend/dist, FastAPI will serve it as a static website.
+try:
+    from pathlib import Path
+    FRONTEND_DIST = (Path(__file__).resolve().parents[2] / "frontend" / "dist")
+    if FRONTEND_DIST.exists():
+        app.mount("/", StaticFiles(directory=str(FRONTEND_DIST), html=True), name="frontend")
+except Exception:
+    # Ignore if dist isn't built yet (common during local dev)
+    pass
