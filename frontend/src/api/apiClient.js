@@ -17,3 +17,8 @@ export async function sendMessage(userMessage) {
 
   return await res.json();
 }
+
+// ✅ Add this BELOW sendMessage (alias for ChatWindow import)
+export async function sendMessageToBackend(query) {
+  return sendMessage(query);
+}
