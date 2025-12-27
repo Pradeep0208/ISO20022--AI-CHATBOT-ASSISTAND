@@ -393,10 +393,10 @@ def enhance_with_llm(raw_content: str, user_query: str) -> str:
     # Build page reference
     page_ref = ""
     if target_page:
-        page_ref = f"**📍 Page: {target_page}**"
+        page_ref = f"**👀 Page: {target_page}**"
     elif section_pages:
         ranges = [f"{k}: pages {v}" for k, v in section_pages.items()]
-        page_ref = f"**📍 Sections:** {', '.join(ranges)}"
+        page_ref = f"**👀 Sections:** {', '.join(ranges)}"
     
     # Build download link
     # Build download link (works locally + on Hugging Face Spaces)
