@@ -399,7 +399,12 @@ def enhance_with_llm(raw_content: str, user_query: str) -> str:
         page_ref = f"**📍 Sections:** {', '.join(ranges)}"
     
     # Build download link
-    download_link = f"📄 Download PDF: http://localhost:8000/pdfs/{pdf_file}"
+    # Build download link (works locally + on Hugging Face Spaces)
+    # HF exposes SPACE_HOST in the runtime; use it to create the public URL.
+    # Optionally override with PUBLIC_BASE_URL (e.g., http://localhost:8000).
+    space_host = os.getenv("SPACE_HOST")
+    public_base_url = os.getenv("PUBLIC_BASE_URL") or (f"https://{space_host}" if space_host else "http://localhost:8000")
+    download_link = f"📄 Download PDF: {public_base_url.rstrip('/')}/pdfs/{pdf_file}"
     
     # Handle location-only
     if not wants_details:
